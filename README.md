@@ -1,4 +1,4 @@
-# Windows-Privilege-Escalation
+# 🪟 Windows-Privilege-Escalation
 Privilege Escalation Techniques in Windows Environments
 
 ## Enumeration
